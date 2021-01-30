@@ -12,9 +12,11 @@ import os
 from flask import Flask, request, render_template, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 import time
+import boto3
 
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
+weightsfile ='http://s3.amazonaws.com/yoloweights/yolov3.weights'
 
 def png2rgb(png, background=(255,255,255) ):
     """Image converting in case if we get a link"""
@@ -125,7 +127,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, multicolor=Fal
 
 app = Flask(__name__)
 
-net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yolov3.weights')
+net = cv2.dnn.readNetFromDarknet('yolov3.cfg', weightsfile)
 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 # test = cv2.imread('templates/chess.jpg', cv2.IMREAD_UNCHANGED)
 
