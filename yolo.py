@@ -10,22 +10,12 @@ from werkzeug.utils import secure_filename
 import time
 import boto3
 import botocore
+from skimage import io
+# from amazon import *
 
-AWS_ACCESS_KEY_ID = 'AKIAJIFPDYDLAT3CTABQ'
-AWS_SECRET_ACCESS_KEY = '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'
 BUCKET_NAME = 'yoloweights' # bucket name
 KEY = 'yolov3.weights' # object key
 
-s3 = boto3.resource('s3')
-# s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-
-try:
-    s3.Bucket(BUCKET_NAME).download_file(KEY, 'yolov.weights')
-except botocore.exceptions.ClientError as e:
-    if e.response['Error']['Code'] == "404":
-        print("The object does not exist.")
-    else:
-        raise
 
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
@@ -201,6 +191,38 @@ def display_image(filename):
     # print('display_image filename: ' + filename)
     return redirect(url_for('static', filename='images/' + filename), code=301)
 
+@app.route('/test/', methods=['GET'])
+def respond():
+    # Retrieve the name from url parameter
+    name = request.args.get("name", None)
+
+    # For debugging
+    print(f"Image url {name}")
+
+    response = {}
+
+    # Check if user sent an url
+    if not name:
+        response["ERROR"] = "no url found"
+    # Valid url
+    else:
+        try:
+            image_np = io.imread(name)
+            print(name)
+            img_inp = png2rgb(image_np)
+            print(img_inp.shape)
+            r = main(img_inp, net, 'web_test.jpg', multicolor=False, precision=.4)
+            if not r:
+                response["MESSAGE"] = "No objects found. Try to reduce precision parameter"
+                return response
+            time.sleep(4)
+            img_out = io.imread("static/images/web_test.jpg")
+            img_out = img_out.tolist()
+            return {"image": img_out}
+        except Exception as ex:
+            response["MESSAGE"] = f"Url {name}, {type(name)} is invalid"
+            print(ex)
+            return response
 
 
 if __name__ == '__main__':
@@ -209,6 +231,16 @@ if __name__ == '__main__':
     if port:
         # 'PORT' variable exists - running on Heroku, listen on external IP and on given by Heroku port
         app.run(host='0.0.0.0', port=int(port))
+        s3 = boto3.resource('s3')
+        # s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+
+        try:
+            s3.Bucket(BUCKET_NAME).download_file(KEY, 'yolov.weights')
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                print("The object does not exist.")
+            else:
+                raise
     else:
         # 'PORT' variable doesn't exist, running not on Heroku, presumably running locally, run with default
         #   values for Flask (listening only on localhost on default Flask port)
