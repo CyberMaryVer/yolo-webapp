@@ -1,1 +1,1 @@
-web: gunicorn yolo:app
+web: gunicorn yolo-wsgi:app -b 0.0.0.0:$PORT
