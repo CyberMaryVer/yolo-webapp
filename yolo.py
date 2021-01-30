@@ -229,8 +229,8 @@ def respond():
             img_inp = cv2.imread(testpath, cv2.IMREAD_UNCHANGED)
             print(name)
             img_inp = png2rgb(img_inp)
-            img_shape = img_inp.shape
             img_inp = resize_img(img_inp)
+            img_shape = img_inp.shape
             print(img_shape)
             r = main(img_inp, net, 'web_test.jpg', multicolor=False, precision=.4)
             if not r:
