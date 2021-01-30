@@ -165,7 +165,7 @@ def upload_image():
             img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             img_inp = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
             img_inp = png2rgb(img_inp)
-            r = main(img_inp, net, filename, multicolor=True, precision=.4)
+            r = main(img_inp, net, filename, multicolor=False, precision=.4)
             time.sleep(4)
             if r:
                 flash('Image successfully uploaded and recognized')
