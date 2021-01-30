@@ -10,12 +10,11 @@ data = 'https://ericinlithuania.files.wordpress.com/2011/12/old-town-street-21.j
 j_data = {'name':data}
 r = requests.get(url = url, params = j_data)
 coded_string = r.text
+jsondict = json.loads(coded_string)
 
-if len(coded_string) < 200:
+if 'MESSaAGE' in jsondict.keys():
     print(json.loads(coded_string)['MESSAGE'])
 else:
-    print(type(coded_string))
-    jsondict = json.loads(coded_string)
     print(jsondict.keys())
     img = np.array(jsondict["image"])
     img_shape = jsondict["shape"]

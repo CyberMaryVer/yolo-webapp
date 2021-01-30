@@ -31,13 +31,13 @@ except botocore.exceptions.ClientError as e:
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
 
-def resize_img(img):
+def resize_img(img, resizing=800):
     h, w, d = img.shape
-    if w > 800:
+    if w > resizing:
         coef = h/w
-        w = 800
+        w = resizing
         h = int(np.round(w*coef))
-    img = cv2.resize(img, (h, w))
+    img = cv2.resize(img, (w, h))
     return img
 
 
@@ -132,7 +132,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, multicolor=Fal
         confidence = confidences[i]
         color = colors[i]
         text = f'{class_name} {confidence:.3}'
-        cv2.rectangle(img_yolo, (x, y), (x + w, y + h), color, 5)
+        cv2.rectangle(img_yolo, (x, y), (x + w, y + h), color, 4)
         cv2.putText(
             img_yolo,
             text,
@@ -186,7 +186,8 @@ def upload_image():
             img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             img_inp = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
             img_inp = png2rgb(img_inp)
-            r = main(img_inp, net, filename, multicolor=False, precision=.4)
+            img_inp = resize_img(img_inp, 600)
+            r = main(img_inp, net, filename, multicolor=False, precision=.3)
             time.sleep(4)
             if r:
                 flash('Image successfully uploaded and recognized')
@@ -229,7 +230,7 @@ def respond():
             img_inp = cv2.imread(testpath, cv2.IMREAD_UNCHANGED)
             print(name)
             img_inp = png2rgb(img_inp)
-            img_inp = resize_img(img_inp)
+            img_inp = resize_img(img_inp, 600)
             img_shape = img_inp.shape
             print(img_shape)
             r = main(img_inp, net, 'web_test.jpg', multicolor=False, precision=.4)
