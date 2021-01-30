@@ -9,7 +9,7 @@ import time
 
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
-weightsfile ='http://s3.amazonaws.com/yoloweights/yolov3.weights'
+weightsfile ='https://yoloweights.s3.eu-west-2.amazonaws.com/yolov3.weights'
 
 def png2rgb(png, background=(255,255,255) ):
     """Image converting in case if we get a link"""
