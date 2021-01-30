@@ -10,7 +10,6 @@ from werkzeug.utils import secure_filename
 import time
 import boto3
 import botocore
-from skimage import io
 from PIL import Image
 # from amazon import *
 
@@ -228,7 +227,7 @@ def respond():
                 return response
             time.sleep(4)
             img_out = Image.open("static/images/web_test.jpg")
-            img_out = img_out.getdata()
+            img_out = np.array(img_out.getdata()).tolist()
             return {"image": img_out}
         except Exception as ex:
             response["MESSAGE"] = f"Url {name}, {type(name)} is invalid"
