@@ -75,7 +75,7 @@ def frame_color(coco, cnames='random', l=80):
 def save_img(img, filename):
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     cv2.imwrite('static/images/'+filename, img)
-    cv2.imwrite(os.path.join('images/', filename), img)
+    # cv2.imwrite(os.path.join('images/', filename), img)
 
 
 def plot_img(img, saveimg=True, showplot=False):
