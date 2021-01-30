@@ -1,9 +1,3 @@
-import wget
-
-# print('Beginning of weights download...')
-# url = 'https://pjreddie.com/media/files/yolov3.weights'
-# wget.download(url, 'yolov3.weights')
-
 import cv2
 import pickle
 import matplotlib.pyplot as plt
@@ -12,7 +6,6 @@ import os
 from flask import Flask, request, render_template, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 import time
-import boto3
 
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
