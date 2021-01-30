@@ -17,6 +17,7 @@ if coded_string is str:
 else:
     print(type(coded_string))
     print(coded_string[:100])
+    print(json.loads(coded_string))
     # img = pybase64.b64decode(coded_string)
     # plt.figure(figsize=(10,8))
     # imgplot = plt.imshow(img)
