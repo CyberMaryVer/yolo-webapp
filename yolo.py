@@ -1,3 +1,9 @@
+import wget
+
+print('Beginning of weights download...')
+url = 'https://pjreddie.com/media/files/yolov3.weights'
+wget.download(url, 'yolov3.weights')
+
 import cv2
 import pickle
 import matplotlib.pyplot as plt
@@ -6,10 +12,18 @@ import os
 from flask import Flask, request, render_template, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 import time
+# import boto3
 
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
-weightsfile ='https://yoloweights.s3.eu-west-2.amazonaws.com/yolov3.weights'
+
+# def yoloweights():
+#     S3_BUCKET = os.environ.get('S3_BUCKET')
+# 
+#     file_name = request.args.get('file_name')
+#     file_type = request.args.get('file_type')
+#
+#     s3 = boto3.client('s3')
 
 def png2rgb(png, background=(255,255,255) ):
     """Image converting in case if we get a link"""
@@ -120,7 +134,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, multicolor=Fal
 
 app = Flask(__name__)
 
-net = cv2.dnn.readNetFromDarknet('yolov3.cfg', weightsfile)
+net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yolov3.weights')
 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 # test = cv2.imread('templates/chess.jpg', cv2.IMREAD_UNCHANGED)
 
