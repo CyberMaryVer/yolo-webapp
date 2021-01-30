@@ -1,8 +1,4 @@
-import wget
-
 print('Beginning of weights download...')
-url = 'https://pjreddie.com/media/files/yolov3.weights'
-# wget.download(url, 'yolov3.weights')
 
 import cv2
 import pickle
@@ -20,8 +16,8 @@ AWS_SECRET_ACCESS_KEY = 'Afh6V1sqTVAGKMADPbTviq5iHpJzMUepNUY10a1x'
 BUCKET_NAME = 'yoloweights' # bucket name
 KEY = 'yolov3.weights' # object key
 
-# s3 = boto3.resource('s3')
-s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+s3 = boto3.resource('s3')
+# s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 try:
     s3.Bucket(BUCKET_NAME).download_file(KEY, 'yolov.weights')
