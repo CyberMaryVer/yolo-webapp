@@ -31,6 +31,16 @@ except botocore.exceptions.ClientError as e:
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
 
+def resize_img(img):
+    h, w, d = img.shape
+    if w > 800:
+        coef = h/w
+        w = 800
+        h = int(np.round(w*coef))
+    img = cv2.resize(img, (h, w))
+    return img
+
+
 def png2rgb(png, background=(255,255,255) ):
     """Image converting in case if we get a link"""
     image_np = png
@@ -39,13 +49,9 @@ def png2rgb(png, background=(255,255,255) ):
     if ch == 3:
         return image_np
 
-    assert ch == 4, 'RGBA image has 4 channels.'
-
     rgb = np.zeros( (row, col, 3), dtype='float32' )
     r, g, b, a = image_np[:,:,0], image_np[:,:,1], image_np[:,:,2], image_np[:,:,3]
-
     a = np.asarray( a, dtype='float32' ) / 255.0
-
     R, G, B = background
 
     rgb[:,:,0] = r * a + (1.0 - a) * R
@@ -224,6 +230,7 @@ def respond():
             print(name)
             img_inp = png2rgb(img_inp)
             img_shape = img_inp.shape
+            img_inp = resize_img(img_inp)
             print(img_shape)
             r = main(img_inp, net, 'web_test.jpg', multicolor=False, precision=.4)
             if not r:
