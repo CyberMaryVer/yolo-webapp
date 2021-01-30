@@ -2,7 +2,7 @@ import wget
 
 print('Beginning of weights download...')
 url = 'https://pjreddie.com/media/files/yolov3.weights'
-wget.download(url, 'yolov3.weights')
+# wget.download(url, 'yolov3.weights')
 
 import cv2
 import pickle
@@ -12,18 +12,27 @@ import os
 from flask import Flask, request, render_template, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 import time
-# import boto3
+import boto3
+import botocore
+
+AWS_ACCESS_KEY_ID = 'AKIAJIFPDYDLAT3CTABQ'
+AWS_SECRET_ACCESS_KEY = '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'
+BUCKET_NAME = 'yoloweights' # bucket name
+KEY = 'yolov3.weights' # object key
+
+# s3 = boto3.resource('s3')
+s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+
+try:
+    s3.Bucket(BUCKET_NAME).download_file(KEY, 'yolov.weights')
+except botocore.exceptions.ClientError as e:
+    if e.response['Error']['Code'] == "404":
+        print("The object does not exist.")
+    else:
+        raise
 
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
-
-# def yoloweights():
-#     S3_BUCKET = os.environ.get('S3_BUCKET')
-# 
-#     file_name = request.args.get('file_name')
-#     file_type = request.args.get('file_type')
-#
-#     s3 = boto3.client('s3')
 
 def png2rgb(png, background=(255,255,255) ):
     """Image converting in case if we get a link"""
@@ -134,7 +143,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, multicolor=Fal
 
 app = Flask(__name__)
 
-net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yolov3.weights')
+net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yolov.weights')
 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 # test = cv2.imread('templates/chess.jpg', cv2.IMREAD_UNCHANGED)
 
