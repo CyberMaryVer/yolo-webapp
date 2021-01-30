@@ -10,14 +10,15 @@ from werkzeug.utils import secure_filename
 import time
 import boto3
 import botocore
+from urllib.request import urlretrieve
 from PIL import Image
 # from amazon import *
 
 BUCKET_NAME = 'yoloweights' # bucket name
 KEY = 'yolov3.weights' # object key
 
-s3 = boto3.resource('s3')
 # s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+s3 = boto3.resource('s3')
 
 try:
     s3.Bucket(BUCKET_NAME).download_file(KEY, 'yolov.weights')
@@ -217,20 +218,23 @@ def respond():
     # Valid url
     else:
         try:
-            image_np = io.imread(name)
+            testpath = "static/images/web_test.jpg"
+            urlretrieve(name, testpath)
+            img_inp = cv2.imread(testpath, cv2.IMREAD_UNCHANGED)
             print(name)
-            img_inp = png2rgb(image_np)
-            print(img_inp.shape)
+            img_inp = png2rgb(img_inp)
+            img_shape = img_inp.shape
+            print(img_shape)
             r = main(img_inp, net, 'web_test.jpg', multicolor=False, precision=.4)
             if not r:
                 response["MESSAGE"] = "No objects found. Try to reduce precision parameter"
                 return response
-            time.sleep(4)
+            time.sleep(2)
             img_out = Image.open("static/images/web_test.jpg")
             img_out = np.array(img_out.getdata()).tolist()
-            return {"image": img_out}
+            return {"image": img_out, "shape": img_shape}
         except Exception as ex:
-            response["MESSAGE"] = f"Url {name}, {type(name)} is invalid"
+            response["MESSAGE"] = f"Url {name} is invalid"
             print(ex)
             return response
 
