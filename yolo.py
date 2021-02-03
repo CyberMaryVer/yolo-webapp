@@ -12,12 +12,14 @@ import boto3
 import botocore
 from urllib.request import urlretrieve
 from PIL import Image
+
 # from amazon import *
+# s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
 BUCKET_NAME = 'yoloweights' # bucket name
 KEY = 'yolov3.weights' # object key
 
-s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+# for heroku
 s3 = boto3.resource('s3')
 
 try:
