@@ -17,7 +17,7 @@ from PIL import Image
 BUCKET_NAME = 'yoloweights' # bucket name
 KEY = 'yolov3.weights' # object key
 
-# s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 s3 = boto3.resource('s3')
 
 try:
@@ -31,7 +31,14 @@ except botocore.exceptions.ClientError as e:
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
 
-def resize_img(img, resizing=800):
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'static/uploads/'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.secret_key = "secret key"
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def resize_img(img, resizing=600):
     h, w, d = img.shape
     if w > resizing:
         coef = h/w
@@ -125,41 +132,54 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, multicolor=Fal
         colors = frame_color(cococlasses, class_names)
 
     img_yolo = img.copy()
+    resize_coef = 1.5
+    img_yolo = cv2.resize(img_yolo, dsize=None, fx=resize_coef,fy=resize_coef)
 
     for i in indices.flatten():
-        x, y, w, h = boxes[i]
+        x, y, w, h = [int(crd * resize_coef) for crd in boxes[i]]
+        # print(x, y, w, h)
         class_name = class_names[i]
         confidence = confidences[i]
         color = colors[i]
-        text = f'{class_name} {confidence:.3}'
-        cv2.rectangle(img_yolo, (x, y), (x + w, y + h), color, 4)
+        text = f'{class_name} {confidence:.2}'
+
+        # print(class_name)
+        if class_name == 'person':
+            center_coord = (x+w//2, y+h//2)
+            pt1 = (center_coord[0] - 20, center_coord[1])
+            pt2 = (center_coord[0] + 20, center_coord[1])
+            pt3 = (center_coord[0], center_coord[1] - 20)
+            pt4 = (center_coord[0], center_coord[1] + 20)
+            color = (0,255,0)
+
+            # Draw transparent frames
+            sub_img = img_yolo[y:y + h, x:x + w]
+            white_rect = np.ones(sub_img.shape, dtype=np.uint8) * 255
+            res = cv2.addWeighted(sub_img, 0.75, white_rect, 0.25, 1.0)
+
+            # Putting the image back to its position
+            img_yolo[y:y + h, x:x + w] = res
+
+            # Draw green circle
+            img_yolo = cv2.circle(img_yolo, center_coord, 16, color, 1)
+            img_yolo = cv2.circle(img_yolo, center_coord, 12, color, 1)
+            img_yolo = cv2.line(img_yolo, pt1, pt2, color, 1)
+            img_yolo = cv2.line(img_yolo, pt3, pt4, color, 1)
+
+        cv2.rectangle(img_yolo, (x, y), (x + w, y + h), color, 1)
         cv2.putText(
             img_yolo,
             text,
             (x, y - 10),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
+            cv2.FONT_HERSHEY_COMPLEX,
+            0.4,
             color)
 
     save_img(img_yolo, filename)
     return True
 
-app = Flask(__name__)
-
-net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yolov.weights')
-net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-# test = cv2.imread('templates/chess.jpg', cv2.IMREAD_UNCHANGED)
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-app.config['UPLOAD_FOLDER'] = 'static/uploads/'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.secret_key = "secret key"
 
 
 @app.route('/')
@@ -187,7 +207,7 @@ def upload_image():
             img_inp = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
             img_inp = png2rgb(img_inp)
             img_inp = resize_img(img_inp, 600)
-            r = main(img_inp, net, filename, multicolor=False, precision=.3)
+            r = main(img_inp, net, filename, multicolor=False, precision=.5)
             time.sleep(4)
             if r:
                 flash('Image successfully uploaded and recognized')
@@ -248,6 +268,9 @@ def respond():
 
 
 if __name__ == '__main__':
+    net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yolov.weights')
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # test = cv2.imread('templates/chess.jpg', cv2.IMREAD_UNCHANGED)
 
     port = os.environ.get('PORT')
     if port:
