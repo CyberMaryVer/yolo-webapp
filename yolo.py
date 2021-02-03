@@ -32,6 +32,8 @@ except botocore.exceptions.ClientError as e:
 
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
+net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yolov.weights')
+net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads/'
@@ -270,8 +272,6 @@ def respond():
 
 
 if __name__ == '__main__':
-    net = cv2.dnn.readNetFromDarknet('yolov3.cfg', 'yolov.weights')
-    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     # test = cv2.imread('templates/chess.jpg', cv2.IMREAD_UNCHANGED)
 
     port = os.environ.get('PORT')
