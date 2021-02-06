@@ -238,7 +238,7 @@ def upload_image():
 @app.route('/display/<filename>')
 def display_image(filename):
     flash('You can save image by clicking on it')
-    # time.sleep(4)
+    time.sleep(4)
     # print('display_image filename: ' + filename)
     return redirect(url_for('static', filename='images/' + filename), code=301)
 
