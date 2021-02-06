@@ -49,8 +49,8 @@ def resize_img(img, resizing=600):
         coef = h/w
         wn = resizing
         hn = int(np.round(wn*coef))
-    inv_coef = w/wn
-    img = cv2.resize(img, (wn, hn))
+        img = cv2.resize(img, (wn, hn))
+    inv_coef = w/resizing
     return img, inv_coef
 
 
@@ -220,7 +220,7 @@ def upload_image():
             img_inp = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
             img_inp = png2rgb(img_inp)
             # img_inp, coef = resize_img(img_inp, 600)
-            r = main(img_inp, net, filename, precision=.5)
+            r = main(img_inp, net, filename, precision=.5, high_quality=True)
             time.sleep(4)
             if r:
                 flash('Image successfully uploaded and recognized')
