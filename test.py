@@ -34,7 +34,7 @@ def test_api(img_url, heroku=False):
         plt.show()
 
 
-test_api(url0, heroku=True)
+test_api(url0, heroku=False)
 
 def png2rgb(png, background=(255, 255, 255)):
     """Image converting in case if we get a link"""

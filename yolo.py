@@ -179,7 +179,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, high_quality=F
             img_yolo = cv2.line(img_yolo, pt1, pt2, color, 1)
             img_yolo = cv2.line(img_yolo, pt3, pt4, color, 1)
 
-        cv2.rectangle(img_yolo, (x, y), (x + w, y + h), color, 3)
+        cv2.rectangle(img_yolo, (x, y), (x + w, y + h), color, 1)
         cv2.putText(
             img_yolo,
             text,
@@ -275,7 +275,6 @@ def respond():
 
             # return image
             img_out = Image.open("static/images/web_test.jpg")
-            img_shape = img_out.shape
             img_out = np.array(img_out.getdata()).tolist()
             return {"image": img_out, "shape": img_shape}
 
