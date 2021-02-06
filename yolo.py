@@ -16,10 +16,11 @@ from PIL import Image
 # from amazon import *
 # s3 = boto3.resource('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
 
-BUCKET_NAME = 'yoloweights' # bucket name
-KEY = 'yolov3.weights' # object key
+BUCKET_NAME = 'yoloweights'  # bucket name
+KEY = 'yolov3.weights'  # object key
 
-# for heroku
+#############################
+# for heroku + aws
 s3 = boto3.resource('s3')
 
 try:
@@ -29,6 +30,7 @@ except botocore.exceptions.ClientError as e:
         print("The object does not exist.")
     else:
         raise
+#############################
 
 filename0 = 'cococlasses.sav'
 c_classes = pickle.load(open(filename0, 'rb'))
@@ -42,19 +44,20 @@ app.secret_key = "secret key"
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+
 def resize_img(img, resizing=600):
     h, w, d = img.shape
     inv_coef = 1
     if w > resizing:
-        coef = h/w
+        coef = h / w
         wn = resizing
-        hn = int(np.round(wn*coef))
+        hn = int(np.round(wn * coef))
         img = cv2.resize(img, (wn, hn))
-        inv_coef = w/resizing
+        inv_coef = w / resizing
     return img, inv_coef
 
 
-def png2rgb(png, background=(255,255,255) ):
+def png2rgb(png, background=(255, 255, 255)):
     """Image converting in case if we get a link"""
     image_np = png
     row, col, ch = image_np.shape
@@ -62,16 +65,17 @@ def png2rgb(png, background=(255,255,255) ):
     if ch == 3:
         return image_np
 
-    rgb = np.zeros( (row, col, 3), dtype='float32' )
-    r, g, b, a = image_np[:,:,0], image_np[:,:,1], image_np[:,:,2], image_np[:,:,3]
-    a = np.asarray( a, dtype='float32' ) / 255.0
+    rgb = np.zeros((row, col, 3), dtype='float32')
+    r, g, b, a = image_np[:, :, 0], image_np[:, :, 1], image_np[:, :, 2], image_np[:, :, 3]
+    a = np.asarray(a, dtype='float32') / 255.0
     R, G, B = background
 
-    rgb[:,:,0] = r * a + (1.0 - a) * R
-    rgb[:,:,1] = g * a + (1.0 - a) * G
-    rgb[:,:,2] = b * a + (1.0 - a) * B
+    rgb[:, :, 0] = r * a + (1.0 - a) * R
+    rgb[:, :, 1] = g * a + (1.0 - a) * G
+    rgb[:, :, 2] = b * a + (1.0 - a) * B
 
     return np.asarray(rgb, dtype='uint8')
+
 
 def output_coordinates_to_box_coordinates(img_h, img_w, cx, cy, w, h):
     abs_x = int((cx - w / 2) * img_w)
@@ -94,7 +98,7 @@ def frame_color(coco, cnames=None, l=80):
 
 def save_img(img, filename):
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    cv2.imwrite('static/images/'+filename, img)
+    cv2.imwrite('static/images/' + filename, img)
     # cv2.imwrite(os.path.join('images/', filename), img)
 
 
@@ -146,7 +150,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, high_quality=F
     else:
         img_yolo = img
         # resize_coef = 1.5
-        img_yolo = cv2.resize(img_yolo, dsize=None, fx=resize_coef,fy=resize_coef)
+        img_yolo = cv2.resize(img_yolo, dsize=None, fx=resize_coef, fy=resize_coef)
 
     for i in indices.flatten():
         x, y, w, h = [int(crd * resize_coef) for crd in boxes[i]]
@@ -158,12 +162,12 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, high_quality=F
 
         # print(class_name)
         if class_name == 'person':
-            center_coord = (x+w//2, y+h//2)
+            center_coord = (x + w // 2, y + h // 2)
             pt1 = (center_coord[0] - 20, center_coord[1])
             pt2 = (center_coord[0] + 20, center_coord[1])
             pt3 = (center_coord[0], center_coord[1] - 20)
             pt4 = (center_coord[0], center_coord[1] + 20)
-            color = (0,255,0)
+            color = (0, 255, 0)
 
             # Draw transparent frames
             sub_img = img_yolo[y:y + h, x:x + w]
@@ -190,6 +194,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, high_quality=F
 
     save_img(img_yolo, filename)
     return True
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -241,6 +246,7 @@ def display_image(filename):
     # print('display_image filename: ' + filename)
     return redirect(url_for('static', filename='images/' + filename), code=301)
 
+
 @app.route('/test/', methods=['GET'])
 def respond():
     # Retrieve the name from url parameter
@@ -268,10 +274,11 @@ def respond():
 
             # recognize image
             r = main(img_inp, net, 'web_test.jpg', precision=.4, high_quality=False)
+            # time.sleep(2)
             if not r:
                 response["MESSAGE"] = "No objects found. Try to reduce precision parameter"
                 return response
-            time.sleep(2)
+            time.sleep(4)
 
             # return image
             img_out = Image.open("static/images/web_test.jpg")
