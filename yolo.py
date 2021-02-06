@@ -108,8 +108,12 @@ def plot_img(img, saveimg=True, showplot=False):
         plt.show()
 
 
-def main(img, net, filename, cococlasses=c_classes, precision=.4):
-    new_img = img
+def main(img, net, filename, cococlasses=c_classes, precision=.4, high_quality=False):
+    if high_quality:
+        new_img = img
+    else:
+        new_img = None
+        
     img, resize_coef = resize_img(img, 600)
     img_h, img_w = img.shape[:2]
 
