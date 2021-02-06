@@ -113,7 +113,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, high_quality=F
         new_img = img
     else:
         new_img = None
-        
+
     img, resize_coef = resize_img(img, 600)
     img_h, img_w = img.shape[:2]
 
@@ -238,7 +238,7 @@ def upload_image():
 @app.route('/display/<filename>')
 def display_image(filename):
     flash('You can save image by clicking on it')
-    # time.sleep(4)
+    time.sleep(4)
     # print('display_image filename: ' + filename)
     return redirect(url_for('static', filename='images/' + filename), code=301)
 
