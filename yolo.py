@@ -44,12 +44,14 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 def resize_img(img, resizing=600):
     h, w, d = img.shape
+    inv_coef = 1
     if w > resizing:
         coef = h/w
-        w = resizing
-        h = int(np.round(w*coef))
-    img = cv2.resize(img, (w, h))
-    return img
+        wn = resizing
+        hn = int(np.round(wn*coef))
+    inv_coef = w/wn
+    img = cv2.resize(img, (wn, hn))
+    return img, inv_coef
 
 
 def png2rgb(png, background=(255,255,255) ):
@@ -79,9 +81,9 @@ def output_coordinates_to_box_coordinates(img_h, img_w, cx, cy, w, h):
     return abs_x, abs_y, abs_w, abs_h
 
 
-def frame_color(coco, cnames='random', l=80):
+def frame_color(coco, cnames=None, l=80):
     arr = np.random.randint(0, 255, (80, 3))
-    if cnames == 'random':
+    if cnames == None:
         colors = [(int(x[0]), int(x[1]), int(x[2])) for x in arr]
     else:
         colors_arr = {x[0]: x[1] for x in zip(coco, arr)}
@@ -106,7 +108,9 @@ def plot_img(img, saveimg=True, showplot=False):
         plt.show()
 
 
-def main(img, net, filename, cococlasses=c_classes, precision=.4, multicolor=False):
+def main(img, net, filename, cococlasses=c_classes, precision=.4):
+    new_img = img
+    img, resize_coef = resize_img(img, 600)
     img_h, img_w = img.shape[:2]
 
     blob = cv2.dnn.blobFromImage(img, 1 / 255, (416, 416), swapRB=True, crop=False)
@@ -130,14 +134,15 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, multicolor=Fal
         return False
 
     class_names = [cococlasses[x.argmax()] for x in objs[:, 5:]]
-    if multicolor:
-        colors = frame_color(cococlasses)
-    else:
-        colors = frame_color(cococlasses, class_names)
+    colors = frame_color(cococlasses, class_names)
 
-    img_yolo = img.copy()
-    resize_coef = 1.5
-    img_yolo = cv2.resize(img_yolo, dsize=None, fx=resize_coef,fy=resize_coef)
+    # use the initial high resolution image to draw frames or resize the current image
+    if new_img is not None:
+        img_yolo = new_img
+    else:
+        img_yolo = img.copy()
+        # resize_coef = 1.5
+        img_yolo = cv2.resize(img_yolo, dsize=None, fx=resize_coef,fy=resize_coef)
 
     for i in indices.flatten():
         x, y, w, h = [int(crd * resize_coef) for crd in boxes[i]]
@@ -170,7 +175,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, multicolor=Fal
             img_yolo = cv2.line(img_yolo, pt1, pt2, color, 1)
             img_yolo = cv2.line(img_yolo, pt3, pt4, color, 1)
 
-        cv2.rectangle(img_yolo, (x, y), (x + w, y + h), color, 1)
+        cv2.rectangle(img_yolo, (x, y), (x + w, y + h), color, 3)
         cv2.putText(
             img_yolo,
             text,
@@ -210,9 +215,9 @@ def upload_image():
             img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             img_inp = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
             img_inp = png2rgb(img_inp)
-            img_inp = resize_img(img_inp, 600)
-            r = main(img_inp, net, filename, multicolor=False, precision=.5)
-            time.sleep(4)
+            # img_inp, coef = resize_img(img_inp, 600)
+            r = main(img_inp, net, filename, precision=.5)
+            # time.sleep(4)
             if r:
                 flash('Image successfully uploaded and recognized')
             else:
@@ -229,7 +234,7 @@ def upload_image():
 @app.route('/display/<filename>')
 def display_image(filename):
     flash('You can save image by clicking on it')
-    time.sleep(4)
+    # time.sleep(4)
     # print('display_image filename: ' + filename)
     return redirect(url_for('static', filename='images/' + filename), code=301)
 
@@ -254,10 +259,10 @@ def respond():
             img_inp = cv2.imread(testpath, cv2.IMREAD_UNCHANGED)
             print(name)
             img_inp = png2rgb(img_inp)
-            img_inp = resize_img(img_inp, 600)
+            # img_inp, coef = resize_img(img_inp, 600)
             img_shape = img_inp.shape
             print(img_shape)
-            r = main(img_inp, net, 'web_test.jpg', multicolor=False, precision=.4)
+            r = main(img_inp, net, 'web_test.jpg', precision=.4)
             if not r:
                 response["MESSAGE"] = "No objects found. Try to reduce precision parameter"
                 return response
