@@ -220,7 +220,7 @@ def upload_image():
             img_inp = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
             img_inp = png2rgb(img_inp)
             # img_inp, coef = resize_img(img_inp, 600)
-            r = main(img_inp, net, filename, precision=.5, high_quality=True)
+            r = main(img_inp, net, filename, precision=.5, high_quality=False)
             time.sleep(4)
             if r:
                 flash('Image successfully uploaded and recognized')
