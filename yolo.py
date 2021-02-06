@@ -221,7 +221,7 @@ def upload_image():
             img_inp = png2rgb(img_inp)
             # img_inp, coef = resize_img(img_inp, 600)
             r = main(img_inp, net, filename, precision=.5)
-            # time.sleep(4)
+            time.sleep(4)
             if r:
                 flash('Image successfully uploaded and recognized')
             else:
@@ -238,7 +238,7 @@ def upload_image():
 @app.route('/display/<filename>')
 def display_image(filename):
     flash('You can save image by clicking on it')
-    time.sleep(4)
+    # time.sleep(4)
     # print('display_image filename: ' + filename)
     return redirect(url_for('static', filename='images/' + filename), code=301)
 
