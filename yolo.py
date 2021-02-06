@@ -50,7 +50,7 @@ def resize_img(img, resizing=600):
         wn = resizing
         hn = int(np.round(wn*coef))
         img = cv2.resize(img, (wn, hn))
-    inv_coef = w/resizing
+        inv_coef = w/resizing
     return img, inv_coef
 
 
@@ -144,7 +144,7 @@ def main(img, net, filename, cococlasses=c_classes, precision=.4, high_quality=F
     if new_img is not None:
         img_yolo = new_img
     else:
-        img_yolo = img.copy()
+        img_yolo = img
         # resize_coef = 1.5
         img_yolo = cv2.resize(img_yolo, dsize=None, fx=resize_coef,fy=resize_coef)
 
@@ -219,7 +219,6 @@ def upload_image():
             img_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             img_inp = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
             img_inp = png2rgb(img_inp)
-            # img_inp, coef = resize_img(img_inp, 600)
             r = main(img_inp, net, filename, precision=.5, high_quality=False)
             time.sleep(4)
             if r:
@@ -258,22 +257,28 @@ def respond():
     # Valid url
     else:
         try:
+            # get image
             testpath = "static/images/web_test.jpg"
             urlretrieve(name, testpath)
             img_inp = cv2.imread(testpath, cv2.IMREAD_UNCHANGED)
             print(name)
             img_inp = png2rgb(img_inp)
-            # img_inp, coef = resize_img(img_inp, 600)
             img_shape = img_inp.shape
             print(img_shape)
-            r = main(img_inp, net, 'web_test.jpg', precision=.4)
+
+            # recognize image
+            r = main(img_inp, net, 'web_test.jpg', precision=.4, high_quality=False)
             if not r:
                 response["MESSAGE"] = "No objects found. Try to reduce precision parameter"
                 return response
             time.sleep(2)
+
+            # return image
             img_out = Image.open("static/images/web_test.jpg")
+            img_shape = img_out.shape
             img_out = np.array(img_out.getdata()).tolist()
             return {"image": img_out, "shape": img_shape}
+
         except Exception as ex:
             response["MESSAGE"] = f"Url {name} is invalid"
             print(ex)

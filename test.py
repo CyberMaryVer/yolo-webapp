@@ -4,7 +4,7 @@ import numpy as np
 import json
 import cv2
 
-url0 = 'https://ericinlithuania.files.wordpress.com/2011/12/old-town-street-21.jpg'
+url0 = 'https://img.theculturetrip.com/450x/wp-content/uploads/2017/02/carnaby-street-1633891_1920.jpg'
 
 
 def test_api(img_url, heroku=False):
@@ -14,7 +14,7 @@ def test_api(img_url, heroku=False):
     if heroku:
         url = url_h
 
-    j_data = {'name': url}
+    j_data = {'name': img_url}
     r = requests.get(url=url, params=j_data)
     coded_string = r.text
     jsondict = json.loads(coded_string)
@@ -34,7 +34,7 @@ def test_api(img_url, heroku=False):
         plt.show()
 
 
-# test_api(url0)
+test_api(url0, heroku=True)
 
 def png2rgb(png, background=(255, 255, 255)):
     """Image converting in case if we get a link"""
@@ -111,26 +111,26 @@ def draw_m(img, center_coords=None, d0=None, thickness=4):
     return img
 
 
-img = cv2.imread("templates/chess.jpg", cv2.IMREAD_UNCHANGED)
-icon = cv2.imread("templates/icon-person.png", cv2.IMREAD_UNCHANGED)
-icon = png2rgb(icon)
-print(img.shape, icon.shape)
-
-img = cv2.resize(img, dsize=None, fx=2, fy=2)
-# img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-#######################################################
-gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-corners = cv2.goodFeaturesToTrack(gray,25,0.01,10)
-corners = np.int0(corners)
-for i in corners:
-    x,y = i.ravel()
-    cv2.circle(img,(x,y),3,255,5)
-
-# img = overlay_transparent(img, icon, 200, 200)
-# img = draw_m(img, center_coords=(300, 500), thickness=6)
-# img = draw_m(img, thickness=10)
-
-plt.imshow(img, cmap='gray')
-plt.savefig('test.jpg')
-plt.show()
+# img = cv2.imread("templates/chess.jpg", cv2.IMREAD_UNCHANGED)
+# icon = cv2.imread("templates/icon-person.png", cv2.IMREAD_UNCHANGED)
+# icon = png2rgb(icon)
+# print(img.shape, icon.shape)
+#
+# img = cv2.resize(img, dsize=None, fx=2, fy=2)
+# # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+#
+# #######################################################
+# gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+# corners = cv2.goodFeaturesToTrack(gray,25,0.01,10)
+# corners = np.int0(corners)
+# for i in corners:
+#     x,y = i.ravel()
+#     cv2.circle(img,(x,y),3,255,5)
+#
+# # img = overlay_transparent(img, icon, 200, 200)
+# # img = draw_m(img, center_coords=(300, 500), thickness=6)
+# # img = draw_m(img, thickness=10)
+#
+# plt.imshow(img, cmap='gray')
+# plt.savefig('test.jpg')
+# plt.show()
